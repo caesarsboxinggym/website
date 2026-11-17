@@ -1,0 +1,17 @@
+# secrets
+.env
+.env.local
+.env*.local
+
+# node
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# supabase local stack
+supabase/.branches/
+supabase/.temp/
+
+# macos
+.DS_Store

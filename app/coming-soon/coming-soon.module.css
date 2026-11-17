@@ -1,0 +1,279 @@
+/* =====================================================================
+   Coming soon — the medallion under a single ring light.
+   Uses the site tokens from globals.css; nothing new in the palette.
+   ===================================================================== */
+
+.page{
+  position:relative;
+  isolation:isolate;
+  min-height:100svh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:
+    radial-gradient(70% 55% at 50% 30%, rgba(176,130,74,.20) 0%, rgba(176,130,74,0) 70%),
+    radial-gradient(120% 80% at 50% 0%, #2A1F16 0%, rgba(36,27,20,0) 65%),
+    var(--pitch);
+}
+
+/* vignette, so the edges fall away like the dark of a hall */
+.page::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:radial-gradient(90% 75% at 50% 42%, rgba(0,0,0,0) 45%, rgba(0,0,0,.6) 100%);
+  pointer-events:none;
+}
+
+.body{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(18px,3.4svh,34px);
+  padding:clamp(20px,4svh,48px) 20px;
+  text-align:center;
+}
+
+/* ---------- the coin ---------- */
+
+.stage{
+  position:relative;
+  width:min(80vw,42svh,400px);
+  min-width:210px;
+  aspect-ratio:1;
+  flex:none;
+  perspective:900px;
+  animation:strike 1000ms cubic-bezier(.2,.8,.25,1) both;
+}
+
+.ring{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  animation:turn 70s linear infinite;
+}
+.ring text{
+  font-family:var(--display);
+  font-size:13px;
+  fill:var(--bronze);
+  opacity:.8;
+}
+
+.coin{
+  --rx:0deg;
+  --ry:0deg;
+  --gx:50%;
+  --gy:50%;
+  --glare:0;
+  position:absolute;
+  inset:11%;
+  border-radius:50%;
+  overflow:hidden;
+  transform:rotateX(var(--rx)) rotateY(var(--ry));
+  transition:transform 260ms cubic-bezier(.2,.7,.3,1);
+  filter:drop-shadow(0 22px 40px rgba(0,0,0,.7));
+  will-change:transform;
+}
+.coin img{ width:100%; height:100%; }
+
+/* a slow pass of light every few seconds, as if the coin were turned in the hand */
+.coin::after{
+  content:"";
+  position:absolute;
+  inset:-30%;
+  background:linear-gradient(72deg,
+    rgba(255,255,255,0) 38%,
+    rgba(255,236,201,.4) 49%,
+    rgba(255,255,255,0) 60%);
+  transform:translateX(-115%);
+  animation:sweep 6.5s cubic-bezier(.3,.5,.2,1) 700ms infinite;
+  pointer-events:none;
+}
+
+/* highlight that follows the pointer */
+.glare{
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at var(--gx) var(--gy),
+    rgba(255,232,190,.5) 0%,
+    rgba(255,232,190,0) 46%);
+  mix-blend-mode:soft-light;
+  opacity:var(--glare);
+  transition:opacity 260ms ease;
+  pointer-events:none;
+}
+
+/* ---------- the words ---------- */
+
+.copy{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:clamp(12px,2svh,20px);
+}
+.copy > *{ animation:rise 700ms cubic-bezier(.2,.8,.25,1) both; }
+.copy > :nth-child(1){ animation-delay:350ms; }
+.copy > :nth-child(2){ animation-delay:470ms; }
+.copy > :nth-child(3){ animation-delay:590ms; }
+.copy > :nth-child(4){ animation-delay:710ms; }
+.copy > :nth-child(5){ animation-delay:830ms; }
+
+.kicker{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin:0;
+  font-size:.6875rem;
+  font-weight:600;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+  color:var(--bronze);
+}
+.kicker span{ margin-right:-.3em; }
+.kicker::before,
+.kicker::after{
+  content:"";
+  width:clamp(28px,9vw,64px);
+  height:1px;
+  background:linear-gradient(90deg, rgba(122,90,49,0), var(--bronze-deep));
+}
+.kicker::after{ transform:scaleX(-1); }
+
+.title{
+  margin:0;
+  font-family:var(--display);
+  font-weight:400;
+  text-transform:uppercase;
+  line-height:1;
+  letter-spacing:.09em;
+  margin-right:-.09em;
+  font-size:clamp(2.5rem,12vw,5.5rem);
+  color:var(--limestone-2);
+}
+/* struck-bronze lettering with light moving through it */
+.title span{
+  background:linear-gradient(100deg,
+    var(--bronze-deep) 0%,
+    var(--bronze) 30%,
+    #F6DDB0 50%,
+    var(--bronze) 70%,
+    var(--bronze-deep) 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  animation:shine 6.5s ease-in-out infinite;
+}
+
+.sub{
+  margin:0;
+  max-width:40ch;
+  color:var(--muted);
+  font-size:1.0625rem;
+  text-wrap:pretty;
+}
+
+.cta{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+}
+
+.facts{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:6px 22px;
+  font-size:.75rem;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--muted-dim);
+}
+.facts b{ color:var(--bronze); font-weight:600; }
+
+/* ---------- foot ---------- */
+
+.foot p{
+  margin:0;
+  padding:14px 20px 18px;
+  text-align:center;
+  font-size:.8125rem;
+  color:var(--muted-dim);
+}
+.foot a{
+  color:var(--muted);
+  text-decoration:none;
+  border-bottom:1px solid var(--hairline);
+}
+.foot a:hover{ color:var(--limestone); border-color:var(--bronze-deep); }
+
+/* ---------- embers: bronze dust rising through the light ---------- */
+
+.embers{
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+}
+.embers span{
+  position:absolute;
+  bottom:-12px;
+  left:var(--x);
+  width:var(--d,3px);
+  height:var(--d,3px);
+  border-radius:50%;
+  background:var(--bronze-lit);
+  box-shadow:0 0 8px 1px rgba(227,188,128,.55);
+  opacity:0;
+  animation:ember var(--t,14s) linear var(--w,0s) infinite;
+}
+.embers span:nth-child(1){ --x:6%;  --t:15s; --w:-2s;  --sway:30px; }
+.embers span:nth-child(2){ --x:14%; --t:19s; --w:-9s;  --sway:-24px; --d:2px; }
+.embers span:nth-child(3){ --x:23%; --t:13s; --w:-5s;  --sway:18px; }
+.embers span:nth-child(4){ --x:31%; --t:21s; --w:-14s; --sway:-34px; --d:2px; }
+.embers span:nth-child(5){ --x:39%; --t:16s; --w:-7s;  --sway:22px; --d:4px; }
+.embers span:nth-child(6){ --x:47%; --t:23s; --w:-3s;  --sway:-16px; --d:2px; }
+.embers span:nth-child(7){ --x:55%; --t:14s; --w:-11s; --sway:28px; }
+.embers span:nth-child(8){ --x:62%; --t:18s; --w:-1s;  --sway:-26px; --d:2px; }
+.embers span:nth-child(9){ --x:70%; --t:20s; --w:-16s; --sway:20px; --d:4px; }
+.embers span:nth-child(10){ --x:77%; --t:15s; --w:-6s;  --sway:-30px; }
+.embers span:nth-child(11){ --x:84%; --t:22s; --w:-12s; --sway:16px; --d:2px; }
+.embers span:nth-child(12){ --x:91%; --t:17s; --w:-4s;  --sway:-20px; }
+.embers span:nth-child(13){ --x:96%; --t:24s; --w:-18s; --sway:24px; --d:2px; }
+.embers span:nth-child(14){ --x:2%;  --t:20s; --w:-10s; --sway:-14px; --d:2px; }
+
+/* ---------- motion ---------- */
+
+@keyframes strike{
+  from{ opacity:0; transform:scale(.9); }
+  to{ opacity:1; transform:scale(1); }
+}
+@keyframes rise{
+  from{ opacity:0; transform:translateY(14px); }
+  to{ opacity:1; transform:none; }
+}
+@keyframes turn{
+  to{ transform:rotate(360deg); }
+}
+@keyframes sweep{
+  0%{ transform:translateX(-115%); }
+  26%,100%{ transform:translateX(115%); }
+}
+@keyframes shine{
+  0%,100%{ background-position:100% 0; }
+  50%{ background-position:0% 0; }
+}
+@keyframes ember{
+  0%{ transform:translate(0,0); opacity:0; }
+  12%{ opacity:.7; }
+  70%{ opacity:.35; }
+  100%{ transform:translate(var(--sway,20px),-105svh); opacity:0; }
+}
