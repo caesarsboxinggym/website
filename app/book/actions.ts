@@ -1,8 +1,5 @@
-'use server'
-
-import { headers } from 'next/headers'
-import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/client'
+import { refresh } from '@/lib/use-data'
 
 export type BookingInput = {
   session_id: string
@@ -28,11 +25,7 @@ export async function requestPlace(input: BookingInput): Promise<BookResult> {
   }
   if (!input.session_id) return { ok: false, error: 'Please pick a session.' }
 
-  const hdrs = await headers()
-  const fwd = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim()
-  const ip = fwd && /^[0-9a-fA-F.:]+$/.test(fwd) ? fwd : null
-
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { error } = await supabase.from('booking_requests').insert({
     session_id: input.session_id,
@@ -42,7 +35,6 @@ export async function requestPlace(input: BookingInput): Promise<BookResult> {
     email: trim(input.email),
     date_of_birth: input.date_of_birth || null,
     note: trim(input.note),
-    submitted_ip: ip,
   })
 
   if (error) {
@@ -65,7 +57,6 @@ export async function requestPlace(input: BookingInput): Promise<BookResult> {
     }
   }
 
-  revalidatePath('/book')
-  revalidatePath('/staff/requests')
+  refresh()
   return { ok: true }
 }

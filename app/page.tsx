@@ -1,10 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
+import { useData } from '@/lib/use-data'
 import { SiteHeader } from './components/site-header'
 import { Stars, Meander } from './components/stars'
 import Link from 'next/link'
 import { one } from '@/lib/pg'
-
-export const revalidate = 300
+import { LOGO } from '@/lib/base'
 
 const DAYS = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
@@ -28,8 +30,19 @@ function ageNote(min: number | null, max: number | null) {
   return null
 }
 
-export default async function Home() {
-  const supabase = await createClient()
+type ClassType = { name: string; slug: string; description: string | null }
+
+type Review = {
+  id: string
+  author_name: string
+  rating: number
+  body: string
+  reviewed_on: string | null
+}
+
+/** The timetable, classes and reviews, read from Supabase in the browser. */
+async function load() {
+  const supabase = createClient()
 
   const [{ data: slots }, { data: classes }, { data: reviews }] = await Promise.all([
     supabase
@@ -50,9 +63,23 @@ export default async function Home() {
       .order('sort'),
   ])
 
+  return {
+    slots: (slots ?? []) as unknown as Slot[],
+    classes: (classes ?? []) as ClassType[],
+    reviews: (reviews ?? []) as Review[],
+  }
+}
+
+export default function Home() {
+  // undefined until the data lands; the rest of the page is already on screen
+  const { data } = useData(load)
+  const slots = data?.slots
+  const classes = data?.classes
+  const reviews = data?.reviews
+
   // group the weekly pattern into day cards
   const byDay = new Map<number, Slot[]>()
-  for (const s of (slots ?? []) as unknown as Slot[]) {
+  for (const s of slots ?? []) {
     if (!byDay.has(s.weekday)) byDay.set(s.weekday, [])
     byDay.get(s.weekday)!.push(s)
   }
@@ -68,7 +95,7 @@ export default async function Home() {
           <div className="shell hero-in">
             <div className="coin">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="Caesar's Boxing Gym medallion" width={560} height={560} />
+              <img src={LOGO} alt="Caesar's Boxing Gym medallion" width={560} height={560} />
             </div>
             <div className="hero-copy">
               <h1 className="hero-title">
@@ -115,7 +142,9 @@ export default async function Home() {
             <div className="band-head">
               <p className="eyebrow">Weekly timetable</p>
               <h2 className="sect-title">
-                {days.length} nights a week, {sessionCount} sessions
+                {slots
+                  ? `${days.length} nights a week, ${sessionCount} sessions`
+                  : 'Monday to Thursday'}
               </h2>
               <p className="lede">
                 Coach names still to come. <span className="ph">awaiting coach names</span>
@@ -159,7 +188,7 @@ export default async function Home() {
             <div className="band-head">
               <p className="eyebrow">What we do</p>
               <h2 className="sect-title">
-                {classes?.length ?? 0} classes, all ages from six up
+                {classes ? `${classes.length} classes, all` : 'All'} ages from six up
               </h2>
               <p className="lede">
                 Class names and age bands are the club&rsquo;s own. The descriptions are draft copy.

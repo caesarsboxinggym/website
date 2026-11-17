@@ -1,8 +1,11 @@
-import { createClient, getStaff } from '@/lib/supabase/server'
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
+import { useStaff } from '@/lib/staff'
+import { useData } from '@/lib/use-data'
+import { PaneLoading } from './pane-loading'
 import { one } from '@/lib/pg'
 import { RollCall, GenerateSessionsButton, type Row, type Session, type MemberOption } from './roll-call'
-
-export const dynamic = 'force-dynamic'
 
 function localDate(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
@@ -17,9 +20,8 @@ function mondayOf(d = new Date()) {
   return m
 }
 
-export default async function TonightPage() {
-  const staff = await getStaff()
-  const supabase = await createClient()
+async function load() {
+  const supabase = createClient()
   const date = localDate()
 
   const [
@@ -96,6 +98,15 @@ export default async function TonightPage() {
     day: 'numeric',
     month: 'long',
   })
+
+  return { error, sessions, rows, members, rates, passRows, weekRange, monthName, heading }
+}
+
+export default function TonightPage() {
+  const staff = useStaff()
+  const { data } = useData(load)
+  if (!data) return <PaneLoading />
+  const { error, sessions, rows, members, rates, passRows, weekRange, monthName, heading } = data
 
   return (
     <section className="pane on">

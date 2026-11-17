@@ -1,7 +1,6 @@
-'use server'
-
-import { revalidatePath } from 'next/cache'
-import { createClient, getStaff } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/client'
+import { getStaff } from '@/lib/staff'
+import { refresh } from '@/lib/use-data'
 
 type Result = { ok: true } | { ok: false; error: string }
 
@@ -13,7 +12,7 @@ export async function generateSessions(weeks = 8): Promise<Result> {
   const staff = await getStaff()
   if (staff?.role !== 'admin') return { ok: false, error: 'Admins only.' }
 
-  const supabase = await createClient()
+  const supabase = createClient()
   const from = new Date()
   const to = new Date()
   to.setDate(to.getDate() + weeks * 7)
@@ -27,14 +26,13 @@ export async function generateSessions(weeks = 8): Promise<Result> {
 
   if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/staff')
-  revalidatePath('/staff/week')
+  refresh()
   return { ok: true }
 }
 
 /** Add an existing member to a session. Price is snapshotted by the RPC. */
 export async function bookMember(sessionId: string, memberId: string): Promise<Result> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { error } = await supabase.rpc('book_member', {
     p_session_id: sessionId,
@@ -43,8 +41,7 @@ export async function bookMember(sessionId: string, memberId: string): Promise<R
 
   if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/staff')
-  revalidatePath('/staff/week')
+  refresh()
   return { ok: true }
 }
 
@@ -74,7 +71,7 @@ export async function createMemberAndBook(
     return { ok: false, error: 'Date of birth is needed — it decides the rate.' }
   }
 
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data, error } = await supabase
     .from('members')
@@ -93,7 +90,7 @@ export async function createMemberAndBook(
   const booked = await bookMember(sessionId, data.id)
   if (!booked.ok) return booked
 
-  revalidatePath('/staff')
+  refresh()
   return { ok: true, memberId: data.id }
 }
 
@@ -108,7 +105,7 @@ export async function takePayment(
   bookingId: string | null,
   sumupRef?: string
 ): Promise<Result> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { error } = await supabase.rpc('record_payment', {
     p_member_id: memberId,
@@ -121,9 +118,7 @@ export async function takePayment(
 
   if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/staff')
-  revalidatePath('/staff/week')
-  revalidatePath('/staff/balances')
+  refresh()
   return { ok: true }
 }
 
@@ -131,7 +126,7 @@ export async function setBookingStatus(
   bookingId: string,
   status: 'booked' | 'attended' | 'no_show' | 'cancelled'
 ): Promise<Result> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { error } = await supabase.rpc('set_booking_status', {
     p_booking_id: bookingId,
@@ -140,7 +135,6 @@ export async function setBookingStatus(
 
   if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/staff')
-  revalidatePath('/staff/week')
+  refresh()
   return { ok: true }
 }

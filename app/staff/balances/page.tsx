@@ -1,7 +1,10 @@
-import { createClient, getStaff } from '@/lib/supabase/server'
-import { ExportCsv } from './export-csv'
+'use client'
 
-export const dynamic = 'force-dynamic'
+import { createClient } from '@/lib/supabase/client'
+import { useStaff } from '@/lib/staff'
+import { useData } from '@/lib/use-data'
+import { PaneLoading } from '../pane-loading'
+import { ExportCsv } from './export-csv'
 
 type Balance = {
   member_id: string
@@ -30,8 +33,8 @@ function mondayOf(d: Date) {
 const shortDate = (s: string) =>
   new Date(s + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 
-export default async function BalancesPage() {
-  const staff = await getStaff()
+export default function BalancesPage() {
+  const staff = useStaff()
 
   // The view guards on is_admin() too, so a coach would see nothing regardless.
   // Saying so plainly beats showing an empty table.
@@ -56,7 +59,11 @@ export default async function BalancesPage() {
     )
   }
 
-  const supabase = await createClient()
+  return <AdminBalances />
+}
+
+async function load() {
+  const supabase = createClient()
 
   const monday = mondayOf(new Date())
   const sunday = new Date(monday)
@@ -82,6 +89,14 @@ export default async function BalancesPage() {
     if (t.method === 'cash') cash += t.total_pence as number
     else card += t.total_pence as number
   }
+
+  return { error, balances, totalOwed, totalSessions, cash, card, monday, sunday }
+}
+
+function AdminBalances() {
+  const { data } = useData(load)
+  if (!data) return <PaneLoading />
+  const { error, balances, totalOwed, totalSessions, cash, card, monday, sunday } = data
 
   const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 

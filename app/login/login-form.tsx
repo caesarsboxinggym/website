@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { getStaff } from '@/lib/staff'
+import { LOGO } from '@/lib/base'
 
 export function LoginForm() {
   const router = useRouter()
@@ -12,6 +14,17 @@ export function LoginForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+
+  // Only ever send people to a page on this site.
+  const wanted = params.get('next')
+  const next = wanted && wanted.startsWith('/') && !wanted.startsWith('//') ? wanted : '/staff'
+
+  // Already signed in as staff: skip the form.
+  useEffect(() => {
+    getStaff().then((staff) => {
+      if (staff) router.replace(next)
+    })
+  }, [router, next])
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -35,14 +48,13 @@ export function LoginForm() {
       return
     }
 
-    router.replace(params.get('next') ?? '/staff')
-    router.refresh()
+    router.replace(next)
   }
 
   return (
     <form className="login" onSubmit={onSubmit}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="login-mark" src="/logo.png" alt="" width={56} height={56} />
+      <img className="login-mark" src={LOGO} alt="" width={56} height={56} />
       <h2>Staff sign in</h2>
 
       <div className="field">

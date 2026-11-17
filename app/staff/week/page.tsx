@@ -1,9 +1,14 @@
+'use client'
+
+import { Suspense } from 'react'
 import Link from 'next/link'
-import { createClient, getStaff } from '@/lib/supabase/server'
+import { useSearchParams } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { useStaff } from '@/lib/staff'
+import { useData } from '@/lib/use-data'
+import { PaneLoading } from '../pane-loading'
 import { one } from '@/lib/pg'
 import { RollCall, type Row, type Session, type MemberOption } from '../roll-call'
-
-export const dynamic = 'force-dynamic'
 
 const iso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -22,16 +27,8 @@ function bandOf(dob: string | null, override: string | null): MemberOption['band
   return age < 13 ? 'kid' : age <= 16 ? 'teen' : 'adult'
 }
 
-export default async function WeekPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ w?: string }>
-}) {
-  const { w } = await searchParams
-  const offset = Number.parseInt(w ?? '0', 10) || 0
-
-  const staff = await getStaff()
-  const supabase = await createClient()
+async function load(offset: number) {
+  const supabase = createClient()
 
   const monday = mondayOf(new Date())
   monday.setDate(monday.getDate() + offset * 7)
@@ -98,6 +95,24 @@ export default async function WeekPage({
 
   const unpaid = rows.filter((r) => !r.paid).length
   const label = offset === 0 ? 'This week' : offset === -1 ? 'Last week' : `Week of ${fmt(monday)}`
+
+  return { error, sessions, rows, members, rates, passRows, weekRange, unpaid, label }
+}
+
+export default function WeekPage() {
+  return (
+    <Suspense fallback={<PaneLoading />}>
+      <Week />
+    </Suspense>
+  )
+}
+
+function Week() {
+  const staff = useStaff()
+  const offset = Number.parseInt(useSearchParams().get('w') ?? '0', 10) || 0
+  const { data } = useData(() => load(offset), String(offset))
+  if (!data) return <PaneLoading />
+  const { error, sessions, rows, members, rates, passRows, weekRange, unpaid, label } = data
 
   return (
     <section className="pane on">

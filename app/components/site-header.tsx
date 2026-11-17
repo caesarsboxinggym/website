@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { BASE, LOGO } from '@/lib/base'
 
 const LINKS = [
   { href: '/#classes', label: 'Timetable' },
@@ -21,7 +22,7 @@ export function SiteHeader() {
       <div className="shell topbar-in">
         <Link className="brand" href="/">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="brand-mark" src="/logo.png" alt="" width={40} height={40} />
+          <img className="brand-mark" src={LOGO} alt="" width={40} height={40} />
           <span className="brand-name">
             Caesar&rsquo;s<span>Boxing Gym</span>
           </span>
@@ -29,7 +30,7 @@ export function SiteHeader() {
 
         <nav className="nav-links">
           {LINKS.map((l) => (
-            <a key={l.href} href={l.href}>
+            <a key={l.href} href={BASE + l.href}>
               {l.label}
             </a>
           ))}
@@ -55,7 +56,7 @@ export function SiteHeader() {
 
       <nav className={open ? 'drawer open' : 'drawer'} id="drawer">
         {LINKS.map((l) => (
-          <a key={l.href} href={l.href} onClick={() => setOpen(false)}>
+          <a key={l.href} href={BASE + l.href} onClick={() => setOpen(false)}>
             {l.label}
           </a>
         ))}

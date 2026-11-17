@@ -13,7 +13,6 @@ export function SignOutButton() {
       onClick={async () => {
         await createClient().auth.signOut()
         router.replace('/login')
-        router.refresh()
       }}
     >
       Sign out

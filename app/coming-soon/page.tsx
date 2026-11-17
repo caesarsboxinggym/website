@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Meander } from '../components/stars'
 import { TiltCoin } from './tilt-coin'
 import s from './coming-soon.module.css'
+import { LOGO } from '@/lib/base'
 
 export const metadata: Metadata = {
   title: "Coming soon | Caesar's Boxing Gym",
@@ -47,7 +48,7 @@ export default function ComingSoon() {
 
           <TiltCoin className={s.coin} glareClassName={s.glare}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Caesar's Boxing Gym medallion" width={560} height={560} />
+            <img src={LOGO} alt="Caesar's Boxing Gym medallion" width={560} height={560} />
           </TiltCoin>
         </div>
 

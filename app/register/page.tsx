@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { SiteHeader } from '../components/site-header'
+import Link from 'next/link'
 import { Meander } from '../components/stars'
 import { RegisterForm } from './form'
 
@@ -36,7 +37,7 @@ export default function RegisterPage() {
           <span>Caesar&rsquo;s Boxing Gym</span>
           <span>266A Shaftmoor Lane, Birmingham B28 8ST &middot; 07568 402875</span>
           <span>
-            <a href="/">Back to the website</a>
+            <Link href="/">Back to the website</Link>
           </span>
         </div>
       </footer>

@@ -1,7 +1,5 @@
-'use server'
-
-import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/client'
+import { refresh } from '@/lib/use-data'
 
 type Result = { ok: true } | { ok: false; error: string }
 
@@ -11,7 +9,7 @@ type Result = { ok: true } | { ok: false; error: string }
  * approving at the same moment cannot push a session past 25.
  */
 export async function acceptBookingRequest(id: string, memberId: string): Promise<Result> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { error } = await supabase.rpc('accept_booking_request', {
     p_request_id: id,
@@ -20,39 +18,34 @@ export async function acceptBookingRequest(id: string, memberId: string): Promis
 
   if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/staff/requests')
-  revalidatePath('/staff')
-  revalidatePath('/staff/week')
-  revalidatePath('/book')
+  refresh()
   return { ok: true }
 }
 
 export async function rejectBookingRequest(id: string): Promise<Result> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { error } = await supabase.rpc('reject_booking_request', { p_request_id: id })
 
   if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/staff/requests')
-  revalidatePath('/book')
+  refresh()
   return { ok: true }
 }
 
 export async function acceptRegistration(id: string): Promise<Result> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { error } = await supabase.rpc('accept_registration', { p_submission_id: id })
 
   if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/staff/requests')
-  revalidatePath('/staff/members')
+  refresh()
   return { ok: true }
 }
 
 export async function rejectRegistration(id: string): Promise<Result> {
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { error } = await supabase
     .from('registration_submissions')
@@ -61,6 +54,6 @@ export async function rejectRegistration(id: string): Promise<Result> {
 
   if (error) return { ok: false, error: error.message }
 
-  revalidatePath('/staff/requests')
+  refresh()
   return { ok: true }
 }

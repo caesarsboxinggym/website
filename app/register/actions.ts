@@ -1,7 +1,4 @@
-'use server'
-
-import { headers } from 'next/headers'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/client'
 
 export type RegistrationInput = {
   first_name: string
@@ -35,8 +32,8 @@ const trim = (v?: string) => {
 }
 
 export async function submitRegistration(input: RegistrationInput): Promise<SubmitResult> {
-  // Validated here as well as in the browser, because a form post can be
-  // replayed with anything in it.
+  // Checked here so the visitor gets a clear message. The database is what
+  // actually enforces the rules — this runs in the browser.
   if (!input.first_name?.trim()) {
     return { ok: false, error: 'Please give a first name.' }
   }
@@ -61,13 +58,7 @@ export async function submitRegistration(input: RegistrationInput): Promise<Subm
     }
   }
 
-  // Unverified — a browser can claim anything here. Recorded only as a hint
-  // when sifting spam, never as evidence.
-  const hdrs = await headers()
-  const fwd = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim()
-  const ip = fwd && /^[0-9a-fA-F.:]+$/.test(fwd) ? fwd : null
-
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { error } = await supabase.from('registration_submissions').insert({
     first_name: input.first_name.trim(),
@@ -85,7 +76,6 @@ export async function submitRegistration(input: RegistrationInput): Promise<Subm
     guardian_relationship: minor ? trim(input.guardian_relationship) : null,
     consent_given: input.consent_given,
     media_consent: input.media_consent,
-    submitted_ip: ip,
   })
 
   if (error) {

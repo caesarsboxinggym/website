@@ -1,9 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
+import { useData } from '@/lib/use-data'
+import { PaneLoading } from '../pane-loading'
 import { one } from '@/lib/pg'
 import { BookingRequestList, type BookingRequest, type MemberOption } from './booking-review'
 import { ReviewList, type Submission } from './registration-review'
-
-export const dynamic = 'force-dynamic'
 
 function bandOf(dob: string | null, override: string | null): MemberOption['band'] {
   if (override) return override as MemberOption['band']
@@ -12,8 +14,8 @@ function bandOf(dob: string | null, override: string | null): MemberOption['band
   return age < 13 ? 'kid' : age <= 16 ? 'teen' : 'adult'
 }
 
-export default async function RequestsPage() {
-  const supabase = await createClient()
+async function load() {
+  const supabase = createClient()
 
   const [{ data: bookingRows, error: bookErr }, { data: regRows }, { data: memberRows }, { data: availRows }] =
     await Promise.all([
@@ -74,6 +76,14 @@ export default async function RequestsPage() {
 
   const registrations = (regRows ?? []) as Submission[]
   const nothing = requests.length === 0 && registrations.length === 0
+
+  return { bookErr, requests, members, registrations, nothing }
+}
+
+export default function RequestsPage() {
+  const { data } = useData(load)
+  if (!data) return <PaneLoading />
+  const { bookErr, requests, members, registrations, nothing } = data
 
   return (
     <section className="pane on">

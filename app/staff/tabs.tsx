@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 export function StaffTabs({ role, pending }: { role: string; pending: number }) {
-  const path = usePathname()
+  // the static build serves /staff/week/, the tabs link to /staff/week
+  const path = usePathname().replace(/\/$/, '') || '/'
 
   const tabs = [
     { href: '/staff', label: 'Tonight' },
