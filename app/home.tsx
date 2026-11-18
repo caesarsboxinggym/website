@@ -151,9 +151,6 @@ export function Home() {
                   ? `${days.length} nights a week, ${sessionCount} sessions`
                   : 'Monday to Thursday'}
               </h2>
-              <p className="lede">
-                Coach names still to come. <span className="ph">awaiting coach names</span>
-              </p>
             </div>
 
             <div className="week">

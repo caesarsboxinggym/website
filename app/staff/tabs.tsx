@@ -12,7 +12,12 @@ export function StaffTabs({ role, pending }: { role: string; pending: number }) 
     { href: '/staff/week', label: 'This week' },
     { href: '/staff/members', label: 'Members' },
     { href: '/staff/requests', label: 'Requests', badge: pending },
-    ...(role === 'admin' ? [{ href: '/staff/balances', label: 'Balances' }] : []),
+    ...(role === 'admin'
+      ? [
+          { href: '/staff/balances', label: 'Balances' },
+          { href: '/staff/timetable', label: 'Timetable' },
+        ]
+      : []),
   ]
 
   return (
