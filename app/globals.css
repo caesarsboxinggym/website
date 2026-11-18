@@ -1927,3 +1927,26 @@ tfoot td{
 }
 .prose a:hover,
 .check a:hover{ color:var(--limestone); }
+
+/* ---------- member numbers ---------- */
+
+.btn-out-on,
+.btn-out-on:hover{
+  color:var(--pitch);
+  background:var(--bronze);
+  border-color:var(--bronze);
+}
+.book-who .pay-presets{ margin-bottom:6px; }
+.field input.book-no{
+  max-width:170px;
+  font-size:1.5rem;
+  letter-spacing:.3em;
+  font-variant-numeric:tabular-nums;
+}
+.field input.book-no::placeholder{ font-size:1rem; letter-spacing:.04em; }
+.mem-no{
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.06em;
+  color:var(--bronze-deep);
+  font-weight:600;
+}

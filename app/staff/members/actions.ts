@@ -8,6 +8,8 @@ export type Band = 'kid' | 'teen' | 'adult'
 /** A row of the members table, as staff see it. */
 export type Member = {
   id: string
+  /** Random four digits; null only until the member-number SQL has been run. */
+  member_no: number | null
   first_name: string
   last_name: string | null
   phone: string | null

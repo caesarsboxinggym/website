@@ -22,7 +22,7 @@ async function load() {
       supabase
         .from('booking_requests')
         .select(
-          'id, session_id, first_name, last_name, phone, email, date_of_birth, note, requested_at, sessions (session_date, starts, class_types (name))'
+          'id, session_id, member_id, first_name, last_name, phone, email, date_of_birth, note, requested_at, sessions (session_date, starts, class_types (name))'
         )
         .eq('status', 'new')
         .order('requested_at'),
@@ -33,7 +33,7 @@ async function load() {
         .order('submitted_at'),
       supabase
         .from('members')
-        .select('id, first_name, last_name, phone, date_of_birth, band_override')
+        .select('*')
         .eq('archived', false)
         .order('first_name'),
       supabase.from('session_availability').select('id, capacity, places_left'),
@@ -51,6 +51,7 @@ async function load() {
     return {
       id: r.id as string,
       session_id: r.session_id as string,
+      member_id: (r.member_id as string) ?? null,
       first_name: r.first_name as string,
       last_name: (r.last_name as string) ?? null,
       phone: r.phone as string,
@@ -68,6 +69,7 @@ async function load() {
 
   const members: MemberOption[] = (memberRows ?? []).map((m) => ({
     id: m.id as string,
+    member_no: (m.member_no as number) ?? null,
     first_name: m.first_name as string,
     last_name: (m.last_name as string) ?? null,
     phone: (m.phone as string) ?? null,

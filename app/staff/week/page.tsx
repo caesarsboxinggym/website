@@ -61,7 +61,7 @@ async function load(offset: number) {
       .neq('booking_status', 'cancelled'),
     supabase
       .from('members')
-      .select('id, first_name, last_name, date_of_birth, band_override')
+      .select('*')
       .eq('archived', false)
       .order('first_name'),
     supabase.from('session_rates').select('band, price_pence'),
@@ -85,6 +85,7 @@ async function load(offset: number) {
 
   const members: MemberOption[] = (memberRows ?? []).map((m) => ({
     id: m.id as string,
+    member_no: (m.member_no as number) ?? null,
     first_name: m.first_name as string,
     last_name: (m.last_name as string) ?? null,
     band: bandOf(m.date_of_birth as string | null, m.band_override as string | null),

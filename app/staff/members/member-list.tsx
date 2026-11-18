@@ -62,6 +62,7 @@ export function MemberList({ members }: { members: Member[] }) {
     ? pool.filter(
         (m) =>
           fullName(m).toLowerCase().includes(q) ||
+          (/^\d{4}$/.test(q) && String(m.member_no ?? '') === q) ||
           (digits.length >= 3 && (m.phone ?? '').replace(/\D/g, '').includes(digits))
       )
     : pool
@@ -79,7 +80,7 @@ export function MemberList({ members }: { members: Member[] }) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Name or phone"
+            placeholder="Name, phone or member number"
             autoComplete="off"
           />
         </div>
@@ -124,6 +125,7 @@ export function MemberList({ members }: { members: Member[] }) {
                 <span className="row-body">
                   <span className="row-name">{fullName(m)}</span>
                   <span className="row-meta">
+                    {m.member_no && <span className="chip mem-no">No. {m.member_no}</span>}
                     {band !== 'adult' && (
                       <span className="chip chip-junior">{BAND_LABEL[band]}</span>
                     )}
@@ -326,6 +328,11 @@ function MemberSheet({
       )}
 
       <div className="det-grid mem-det">
+        {m.member_no && (
+          <Detail k="Member number">
+            <span className="mem-no">{m.member_no}</span>
+          </Detail>
+        )}
         <Detail k="Phone">
           {m.phone ? (
             <a className="mem-link" href={tel(m.phone)}>

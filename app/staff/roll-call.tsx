@@ -36,6 +36,7 @@ export type Session = {
 
 export type MemberOption = {
   id: string
+  member_no?: number | null
   first_name: string
   last_name: string | null
   band: 'kid' | 'teen' | 'adult'
@@ -535,8 +536,10 @@ function AddSheet({
   const available = members.filter((m) => !bookedIds.includes(m.id))
   const q = query.trim().toLowerCase()
   const matches = q
-    ? available.filter((m) =>
-        `${m.first_name} ${m.last_name ?? ''}`.toLowerCase().includes(q)
+    ? available.filter(
+        (m) =>
+          `${m.first_name} ${m.last_name ?? ''}`.toLowerCase().includes(q) ||
+          (/^\d{4}$/.test(q) && String(m.member_no ?? '') === q)
       )
     : available
 
@@ -589,7 +592,7 @@ function AddSheet({
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Start typing a name"
+                placeholder="Name or member number"
                 autoComplete="off"
               />
             </div>
@@ -614,7 +617,10 @@ function AddSheet({
                     <span className="opt-name">
                       {m.first_name} {m.last_name ?? ''}
                     </span>
-                    <span className="opt-note">{BAND_LABEL[m.band]}</span>
+                    <span className="opt-note">
+                      {m.member_no ? `No. ${m.member_no} · ` : ''}
+                      {BAND_LABEL[m.band]}
+                    </span>
                   </span>
                   <span className="opt-fig">Add</span>
                 </button>

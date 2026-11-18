@@ -10,6 +10,8 @@ const NEW = 'new'
 export type BookingRequest = {
   id: string
   session_id: string
+  /** Set when they asked with their member number, so there is no guessing who it is. */
+  member_id: string | null
   first_name: string
   last_name: string | null
   phone: string
@@ -26,6 +28,7 @@ export type BookingRequest = {
 
 export type MemberOption = {
   id: string
+  member_no: number | null
   first_name: string
   last_name: string | null
   phone: string | null
@@ -81,6 +84,8 @@ function BookingCard({
 
   // Match on phone first — it is the one field we insist on — then on name.
   const suggested = useMemo(() => {
+    const known = r.member_id ? members.filter((m) => m.id === r.member_id) : []
+    if (known.length) return known
     const p = digits(r.phone)
     const byPhone = members.filter((m) => m.phone && digits(m.phone) === p)
     if (byPhone.length) return byPhone
@@ -108,7 +113,11 @@ function BookingCard({
 
   const q = query.trim().toLowerCase()
   const matches = q
-    ? members.filter((m) => `${m.first_name} ${m.last_name ?? ''}`.toLowerCase().includes(q))
+    ? members.filter(
+        (m) =>
+          `${m.first_name} ${m.last_name ?? ''}`.toLowerCase().includes(q) ||
+          (/^\d{4}$/.test(q) && String(m.member_no ?? '') === q)
+      )
     : suggested
 
   const full = r.places_left <= 0
@@ -181,7 +190,7 @@ function BookingCard({
         <input
           className="match-search"
           type="search"
-          placeholder="Search members by name"
+          placeholder="Search members by name or number"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -208,6 +217,7 @@ function BookingCard({
                   {m.first_name} {m.last_name ?? ''}
                 </span>
                 <span className="opt-note">
+                  {m.member_no ? `No. ${m.member_no} · ` : ''}
                   {m.band === 'kid' ? 'Kid' : m.band === 'teen' ? 'Teenager' : 'Adult'}
                   {m.phone ? ` · ${m.phone}` : ''}
                 </span>

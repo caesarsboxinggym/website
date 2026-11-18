@@ -87,9 +87,26 @@ function welcomeEmail(member: Record<string, unknown>): Email | null {
   const first = typeof member.first_name === 'string' ? member.first_name.trim() : ''
   const hello = first ? `Welcome, ${esc(first)}` : 'Welcome to the gym'
 
+  // Four digits, set by the database when the member is added.
+  const memberNo =
+    typeof member.member_no === 'number' && member.member_no >= 1000 && member.member_no <= 9999
+      ? String(member.member_no)
+      : null
+
+  const numberHtml = memberNo
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 18px;">
+         <tr><td align="center" style="background:#120E0A;border:1px solid #7A5A31;border-radius:4px;padding:16px 12px;">
+           <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#B0824A;">Your member number</div>
+           <div style="font-family:Georgia,'Times New Roman',serif;font-size:38px;line-height:1.2;letter-spacing:8px;color:#F4EEE3;padding-left:8px;">${memberNo}</div>
+           <div style="font-size:13px;color:#A2907C;">Keep this. Type it in when you book and there is nothing else to fill in.</div>
+         </td></tr>
+       </table>`
+    : ''
+
   const html = layout(
     hello,
     `<p style="margin:0 0 14px;">You&rsquo;re on the system at Caesar&rsquo;s Boxing Gym. Good to have you.</p>
+     ${numberHtml}
      <p style="margin:0 0 14px;">Here is what you need to know:</p>
      <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 6px;font-size:15px;line-height:1.6;color:#EAE1D3;">
        <tr><td style="padding:0 14px 8px 0;color:#B0824A;white-space:nowrap;vertical-align:top;">When</td><td style="padding:0 0 8px;">Monday to Thursday evenings</td></tr>
@@ -97,7 +114,7 @@ function welcomeEmail(member: Record<string, unknown>): Email | null {
        <tr><td style="padding:0 14px 8px 0;color:#B0824A;white-space:nowrap;vertical-align:top;">Cost</td><td style="padding:0 0 8px;">&pound;3 a session for kids, &pound;5 for everyone else, or &pound;10 for the whole week</td></tr>
        <tr><td style="padding:0 14px 8px 0;color:#B0824A;white-space:nowrap;vertical-align:top;">Paying</td><td style="padding:0 0 8px;">On the night, cash or card. Nothing to pay in advance.</td></tr>
      </table>
-     <p style="margin:10px 0 0;">Pick your sessions online and a coach will confirm your place.</p>
+     <p style="margin:10px 0 0;">Pick your sessions online${memberNo ? ' with your member number' : ''} and a coach will confirm your place.</p>
      ${button(`${SITE}/book/`, 'Book a session')}`
   )
 
@@ -106,6 +123,9 @@ function welcomeEmail(member: Record<string, unknown>): Email | null {
     '',
     "You're on the system at Caesar's Boxing Gym. Good to have you.",
     '',
+    ...(memberNo
+      ? [`Your member number: ${memberNo}`, 'Keep this. Type it in when you book and there is nothing else to fill in.', '']
+      : []),
     'When: Monday to Thursday evenings',
     'Where: 266A Shaftmoor Lane, Birmingham B28 8ST',
     'Cost: £3 a session for kids, £5 for everyone else, or £10 for the whole week',

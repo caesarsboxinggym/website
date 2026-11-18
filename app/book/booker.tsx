@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
-import { requestPlace } from './actions'
+import { memberGroup, requestPlace, requestPlaceByNumber, validMemberNo } from './actions'
 import { BASE } from '@/lib/base'
-import { fitsSession, isKidOn, todayIso, validDob } from '@/lib/age'
+import { fitsSession, isKidOn, isKidsClass, todayIso, validDob } from '@/lib/age'
 
 export type Slot = {
   id: string
@@ -44,12 +44,57 @@ function fullness(left: number, capacity: number) {
   return { text: `${left} places left`, tone: 'ok' as const }
 }
 
+/** Remembered on this device only, so a member types their number once. */
+const NO_KEY = 'cb:member-no'
+
+type Group = 'kid' | 'adult' | null | 'error' | undefined
+
 export function Booker({ slots }: { slots: Slot[] }) {
   const [picked, setPicked] = useState<Slot | null>(null)
   const [done, setDone] = useState<Slot | null>(null)
   // Asked first, because it decides which classes they can ask for.
   const [dob, setDob] = useState('')
   const dobOk = validDob(dob)
+
+  // Members can skip the form with their number instead.
+  const [mode, setMode] = useState<'new' | 'member'>('new')
+  const [no, setNo] = useState('')
+  // undefined = not looked up yet, null = no such number
+  const [group, setGroup] = useState<Group>(undefined)
+  const latest = useRef('')
+
+  function lookUp(value: string) {
+    const v = value.replace(/\D/g, '').slice(0, 4)
+    setNo(v)
+    setGroup(undefined)
+    latest.current = v
+    if (!validMemberNo(v)) return
+    memberGroup(v).then((res) => {
+      if (latest.current !== v) return
+      setGroup(res.ok ? res.group : 'error')
+      if (res.ok && res.group) {
+        try {
+          localStorage.setItem(NO_KEY, v)
+        } catch {}
+      }
+    })
+  }
+
+  useEffect(() => {
+    let saved: string | null = null
+    try {
+      saved = localStorage.getItem(NO_KEY)
+    } catch {}
+    if (saved && validMemberNo(saved)) {
+      setMode('member')
+      lookUp(saved)
+    }
+    // run once, on arrival
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const asMember = mode === 'member'
+  const memberOk = asMember && (group === 'kid' || group === 'adult')
 
   if (done) {
     return (
@@ -79,7 +124,15 @@ export function Booker({ slots }: { slots: Slot[] }) {
   }
 
   if (picked) {
-    return <RequestForm slot={picked} dob={dob} onBack={() => setPicked(null)} onDone={() => { setDone(picked); setPicked(null) }} />
+    const finish = () => {
+      setDone(picked)
+      setPicked(null)
+    }
+    return memberOk ? (
+      <MemberConfirm slot={picked} memberNo={no} onBack={() => setPicked(null)} onDone={finish} />
+    ) : (
+      <RequestForm slot={picked} dob={dob} onBack={() => setPicked(null)} onDone={finish} />
+    )
   }
 
   if (slots.length === 0) {
@@ -92,8 +145,13 @@ export function Booker({ slots }: { slots: Slot[] }) {
   }
 
   // Kids (12 and under) see kids classes only; everyone else sees the rest.
-  const open = dobOk ? slots.filter((s) => fitsSession(dob, s.session_date, s.max_age)) : []
-  const kid = dobOk && isKidOn(dob, todayIso())
+  const ready = asMember ? memberOk : dobOk
+  const kid = asMember ? group === 'kid' : dobOk && isKidOn(dob, todayIso())
+  const open = !ready
+    ? []
+    : asMember
+      ? slots.filter((s) => isKidsClass(s.max_age) === kid)
+      : slots.filter((s) => fitsSession(dob, s.session_date, s.max_age))
 
   // group by day
   const days: { date: string; slots: Slot[] }[] = []
@@ -106,29 +164,83 @@ export function Booker({ slots }: { slots: Slot[] }) {
   return (
     <div className="book-days">
       <div className="book-who">
-        <div className="field">
-          <label htmlFor="bdob">Date of birth of the person training</label>
-          <input
-            id="bdob"
-            type="date"
-            value={dob}
-            onChange={(e) => setDob(e.target.value)}
-            max={todayIso()}
-            autoComplete="bday"
-          />
+        <div className="pay-presets" role="group" aria-label="How to book">
+          <button
+            type="button"
+            className={!asMember ? 'btn-out btn-out-on' : 'btn-out'}
+            aria-pressed={!asMember}
+            onClick={() => setMode('new')}
+          >
+            New here
+          </button>
+          <button
+            type="button"
+            className={asMember ? 'btn-out btn-out-on' : 'btn-out'}
+            aria-pressed={asMember}
+            onClick={() => setMode('member')}
+          >
+            I have a member number
+          </button>
         </div>
-        <p className="field-hint">
-          {!dob
-            ? 'Start here. Kids (12 and under) and adults train in separate classes, so this decides which sessions you can ask for.'
-            : !dobOk
-              ? 'That does not look like a real date of birth.'
-              : kid
-                ? 'Showing kids classes, for ages 12 and under.'
-                : 'Showing classes for ages 13 and over. Kids classes are for 12 and under.'}
-        </p>
+
+        {asMember ? (
+          <>
+            <div className="field">
+              <label htmlFor="bno">Member number</label>
+              <input
+                id="bno"
+                className="book-no"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={4}
+                value={no}
+                onChange={(e) => lookUp(e.target.value)}
+                placeholder="4 digits"
+                autoComplete="off"
+              />
+            </div>
+            <p className="field-hint">
+              {no.length < 4
+                ? 'It is in your welcome email. A coach can also tell you it.'
+                : group === undefined
+                  ? 'Checking…'
+                  : group === 'error'
+                    ? 'Could not check that number just now. Try again, or book as new.'
+                    : group === null
+                      ? 'That number is not on the system. Check it, or choose “New here”.'
+                      : kid
+                        ? 'Showing kids classes. Pick a session and that is it.'
+                        : 'Showing your classes. Pick a session and that is it.'}
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="field">
+              <label htmlFor="bdob">Date of birth of the person training</label>
+              <input
+                id="bdob"
+                type="date"
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
+                max={todayIso()}
+                autoComplete="bday"
+              />
+            </div>
+            <p className="field-hint">
+              {!dob
+                ? 'Start here. Kids (12 and under) and adults train in separate classes, so this decides which sessions you can ask for.'
+                : !dobOk
+                  ? 'That does not look like a real date of birth.'
+                  : kid
+                    ? 'Showing kids classes, for ages 12 and under.'
+                    : 'Showing classes for ages 13 and over. Kids classes are for 12 and under.'}
+            </p>
+          </>
+        )}
       </div>
 
-      {dobOk && days.length === 0 && (
+      {ready && days.length === 0 && (
         <div className="note">
           <b>No {kid ? 'kids' : 'adult'} sessions in the next two weeks.</b> Give the gym a ring on
           07568 402875 and a coach will sort you out.
@@ -167,6 +279,63 @@ export function Booker({ slots }: { slots: Slot[] }) {
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+/** A member asking with their number: nothing to fill in, just confirm. */
+function MemberConfirm({
+  slot,
+  memberNo,
+  onBack,
+  onDone,
+}: {
+  slot: Slot
+  memberNo: string
+  onBack: () => void
+  onDone: () => void
+}) {
+  const [error, setError] = useState<string | null>(null)
+  const [pending, start] = useTransition()
+
+  return (
+    <div className="reg-form">
+      <div className="book-picked">
+        <span className="book-picked-k">Member {memberNo} is asking for</span>
+        <span className="book-picked-v">
+          {hhmm(slot.starts)} {slot.class_name}
+        </span>
+        <span className="book-picked-m">
+          {dayHeading(slot.session_date).replace(' — tonight', '')} &middot; {slot.places_left} of{' '}
+          {slot.capacity} places left
+        </span>
+        <button className="btn-out" type="button" onClick={onBack}>
+          Change
+        </button>
+      </div>
+
+      {error && <p className="sheet-warn">{error}</p>}
+
+      <button
+        className="btn btn-solid reg-submit"
+        type="button"
+        disabled={pending}
+        onClick={() => {
+          setError(null)
+          start(async () => {
+            const res = await requestPlaceByNumber(slot.id, memberNo)
+            if (!res.ok) return setError(res.error)
+            onDone()
+          })
+        }}
+      >
+        {pending ? 'Sending…' : 'Ask for a place'}
+      </button>
+
+      <p className="field-hint">
+        This asks for a place; a coach confirms it. Nothing to pay now &mdash; pay on the night,
+        cash or card.
+      </p>
     </div>
   )
 }
