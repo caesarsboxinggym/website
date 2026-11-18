@@ -204,6 +204,8 @@ export function RollCall({
           passes={passes}
           weekRange={weekRange}
           monthName={monthName}
+          isAdmin={role === 'admin'}
+          today={todayIso}
           onClose={() => setPay(null)}
           onDone={(msg) => {
             setPay(null)
@@ -240,6 +242,8 @@ function PaymentSheet({
   passes,
   weekRange,
   monthName,
+  isAdmin,
+  today,
   onClose,
   onDone,
 }: {
@@ -248,9 +252,13 @@ function PaymentSheet({
   passes: { kind: string; price_pence: number | null; eligible_bands: string[] }[]
   weekRange: string
   monthName: string
+  isAdmin: boolean
+  today: string
   onClose: () => void
   onDone: (msg: string) => void
 }) {
+  // Typing up a past session: assume the money was taken that day.
+  const [takenOn, setTakenOn] = useState(row.session_date < today ? row.session_date : today)
   const [kind, setKind] = useState<'single' | 'week' | 'month'>('single')
   const [method, setMethod] = useState<'cash' | 'card'>('cash')
   const [ref, setRef] = useState('')
@@ -272,7 +280,8 @@ function PaymentSheet({
         kind,
         method,
         row.booking_id,
-        method === 'card' ? ref : undefined
+        method === 'card' ? ref : undefined,
+        isAdmin && takenOn && takenOn !== today ? takenOn : undefined
       )
       if (!res.ok) {
         setError(res.error)
@@ -406,6 +415,30 @@ function PaymentSheet({
               onChange={(e) => setRef(e.target.value)}
               placeholder="Last 4 digits or receipt no."
             />
+          </div>
+        )}
+
+        {isAdmin && (
+          <div className="field field-light">
+            <label htmlFor="taken-on">Date taken</label>
+            <input
+              id="taken-on"
+              type="date"
+              value={takenOn}
+              max={today}
+              onChange={(e) => setTakenOn(e.target.value)}
+            />
+            {takenOn !== today && (
+              <p className="sheet-note" style={{ marginTop: 6 }}>
+                This payment will be recorded as taken on{' '}
+                {new Date(takenOn + 'T12:00:00').toLocaleDateString('en-GB', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                })}
+                , not today.
+              </p>
+            )}
           </div>
         )}
 

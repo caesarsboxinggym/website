@@ -103,7 +103,9 @@ export async function takePayment(
   kind: 'single' | 'week' | 'month',
   method: 'cash' | 'card',
   bookingId: string | null,
-  sumupRef?: string
+  sumupRef?: string,
+  /** yyyy-mm-dd, admins only. Left out, the payment is stamped now. */
+  takenOn?: string
 ): Promise<Result> {
   const supabase = createClient()
 
@@ -114,6 +116,7 @@ export async function takePayment(
     p_booking_id: kind === 'single' ? bookingId : null,
     p_sumup_ref: sumupRef?.trim() || null,
     p_note: null,
+    ...(takenOn ? { p_taken_on: takenOn } : {}),
   })
 
   if (error) return { ok: false, error: error.message }
