@@ -16,6 +16,7 @@ export type RegistrationInput = {
   guardian_relationship?: string
   consent_given: boolean
   media_consent: boolean
+  privacy_agreed: boolean
 }
 
 export type SubmitResult = { ok: true } | { ok: false; error: string }
@@ -55,6 +56,13 @@ export async function submitRegistration(input: RegistrationInput): Promise<Subm
     return {
       ok: false,
       error: 'A parent or guardian needs to agree to the consent before we can register a under-18.',
+    }
+  }
+
+  if (!input.privacy_agreed) {
+    return {
+      ok: false,
+      error: 'Please tick the box to agree to the gym keeping these details.',
     }
   }
 

@@ -427,7 +427,8 @@ export function Home() {
             </a>
           </span>
           <span>
-            <a href="#top">Back to top</a> &middot; <Link href="/staff">Staff login</Link>
+            <a href="#top">Back to top</a> &middot; <Link href="/privacy">Privacy</Link> &middot;{' '}
+            <Link href="/staff">Staff login</Link>
           </span>
         </div>
       </footer>

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { Meander } from '../components/stars'
 import { TiltCoin } from './tilt-coin'
 import s from './coming-soon.module.css'
@@ -99,7 +100,8 @@ export default function ComingSoon() {
           <a href="tel:+447568402875">07568 402875</a> &middot;{' '}
           <a href={FACEBOOK} target="_blank" rel="noreferrer">
             Facebook
-          </a>
+          </a>{' '}
+          &middot; <Link href="/privacy">Privacy</Link>
         </p>
       </footer>
     </main>

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { requestPlace } from './actions'
+import { BASE } from '@/lib/base'
 import { fitsSession, isKidOn, todayIso, validDob } from '@/lib/age'
 
 export type Slot = {
@@ -188,6 +189,7 @@ function RequestForm({
     email: '',
     note: '',
   })
+  const [privacy, setPrivacy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, start] = useTransition()
 
@@ -203,7 +205,7 @@ function RequestForm({
         e.preventDefault()
         setError(null)
         start(async () => {
-          const res = await requestPlace({ session_id: slot.id, date_of_birth: dob, ...f })
+          const res = await requestPlace({ session_id: slot.id, date_of_birth: dob, privacy_agreed: privacy, ...f })
           if (!res.ok) return setError(res.error)
           onDone()
         })
@@ -255,6 +257,24 @@ function RequestForm({
           <textarea id="bnote" rows={2} value={f.note} onChange={set('note')} />
         </div>
       </fieldset>
+
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={privacy}
+          onChange={(e) => setPrivacy(e.target.checked)}
+          required
+        />
+        <span>
+          I agree to Caesar&rsquo;s Boxing Gym keeping these details to arrange and run the
+          session, as set out in the{' '}
+          <a href={`${BASE}/privacy/`} target="_blank" rel="noreferrer">
+            privacy notice
+          </a>
+          . They stay with the gym and are never sold or passed on. If the person training is
+          under 18, a parent or guardian should tick this.
+        </span>
+      </label>
 
       {error && <p className="sheet-warn">{error}</p>}
 

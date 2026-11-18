@@ -1900,3 +1900,30 @@ tfoot td{
   background:#F6EBD9;
   color:#241B14;
 }
+
+/* ---------- privacy notice: long-form reading ---------- */
+
+.prose{ color:var(--muted); font-size:1rem; line-height:1.7; }
+.prose h2{
+  margin:34px 0 10px;
+  font-family:var(--display);
+  font-weight:400;
+  font-size:1.25rem;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--limestone-2);
+}
+.prose p{ margin:0 0 12px; text-wrap:pretty; }
+.prose ul{ margin:0 0 12px; padding-left:20px; }
+.prose li{ margin-bottom:8px; }
+.prose li::marker{ color:var(--bronze-deep); }
+.prose b{ color:var(--limestone); font-weight:600; }
+.prose a,
+.check a{
+  color:var(--bronze-lit);
+  text-decoration:underline;
+  text-decoration-color:var(--bronze-deep);
+  text-underline-offset:3px;
+}
+.prose a:hover,
+.check a:hover{ color:var(--limestone); }

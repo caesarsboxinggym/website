@@ -37,7 +37,7 @@ export default function BookPage() {
           <span>Caesar&rsquo;s Boxing Gym</span>
           <span>266A Shaftmoor Lane, Birmingham B28 8ST &middot; 07568 402875</span>
           <span>
-            <Link href="/">Back to the website</Link>
+            <Link href="/">Back to the website</Link> &middot; <Link href="/privacy">Privacy</Link>
           </span>
         </div>
       </footer>

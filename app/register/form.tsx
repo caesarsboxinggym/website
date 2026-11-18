@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { submitRegistration } from './actions'
+import { BASE } from '@/lib/base'
 
 /** Under 18 on today's date, mirroring accept_registration() in SQL. */
 function isMinor(dob: string) {
@@ -48,6 +49,7 @@ export function RegisterForm() {
   })
   const [consent, setConsent] = useState(false)
   const [media, setMedia] = useState(false)
+  const [privacy, setPrivacy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState(false)
   const [pending, start] = useTransition()
@@ -66,6 +68,7 @@ export function RegisterForm() {
         ...f,
         consent_given: consent,
         media_consent: media,
+        privacy_agreed: privacy,
       })
       if (!res.ok) {
         setError(res.error)
@@ -142,8 +145,8 @@ export function RegisterForm() {
           <label htmlFor="em">Email &mdash; optional</label>
           <input id="em" type="email" value={f.email} onChange={set('email')} autoComplete="email" />
           <p className="field-hint">
-            Leave it blank if you&rsquo;d rather not. It only gets used to send a payment link if
-            you can&rsquo;t get in to settle up.
+            Leave it blank if you&rsquo;d rather not. It gets used for a welcome email, and to
+            send a payment link if you can&rsquo;t get in to settle up.
           </p>
         </div>
 
@@ -235,6 +238,27 @@ export function RegisterForm() {
           <span>
             Happy to appear in photos and videos the gym posts on Instagram and Facebook. Entirely
             optional, and you can change your mind by telling a coach.
+          </span>
+        </label>
+      </fieldset>
+
+      <fieldset className="reg-set">
+        <legend className="eyebrow">Your details</legend>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={privacy}
+            onChange={(e) => setPrivacy(e.target.checked)}
+            required
+          />
+          <span>
+            I agree to Caesar&rsquo;s Boxing Gym keeping these details, including any health
+            information, to run sessions and keep members safe, as set out in the{' '}
+            <a href={`${BASE}/privacy/`} target="_blank" rel="noreferrer">
+              privacy notice
+            </a>
+            . They stay with the gym and are never sold or passed on.
+            {minor ? ' A parent or guardian should tick this for an under 18.' : ''}
           </span>
         </label>
       </fieldset>

@@ -10,6 +10,7 @@ export type BookingInput = {
   email?: string
   date_of_birth: string
   note?: string
+  privacy_agreed: boolean
 }
 
 export type BookResult = { ok: true } | { ok: false; error: string }
@@ -27,6 +28,9 @@ export async function requestPlace(input: BookingInput): Promise<BookResult> {
   if (!input.session_id) return { ok: false, error: 'Please pick a session.' }
   if (!validDob(input.date_of_birth)) {
     return { ok: false, error: 'Please give the date of birth of the person training.' }
+  }
+  if (!input.privacy_agreed) {
+    return { ok: false, error: 'Please tick the box to agree to the gym keeping these details.' }
   }
 
   const supabase = createClient()
