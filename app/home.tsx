@@ -107,7 +107,7 @@ export function Home() {
                 Caesar&rsquo;s<em>Boxing Gym</em>
               </h1>
               <p className="hero-sub">
-                Boxing for kids, teenagers, fighters and adults &mdash; plus circuits and a ladies
+                Boxing for kids, fighters and adults &mdash; plus circuits and a ladies
                 bootcamp. Four nights a week on Shaftmoor Lane. Turn up, pay at the door.
               </p>
               <div className="hero-cta">
@@ -230,7 +230,7 @@ export function Home() {
                 <p className="price-copy">Any session a kid trains in. Pay on the night.</p>
               </div>
               <div className="price price-pick">
-                <span className="price-name">Teenagers &amp; adults</span>
+                <span className="price-name">Adults</span>
                 <span className="price-fig">
                   &pound;5<small>per session</small>
                 </span>

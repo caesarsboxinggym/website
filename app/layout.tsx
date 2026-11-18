@@ -4,7 +4,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: "Caesar's Boxing Gym | Birmingham",
   description:
-    'Community boxing gym on Shaftmoor Lane, Birmingham. Kids, teenagers, fighters and adults, Monday to Thursday. £5 a session or £10 for the week.',
+    'Community boxing gym on Shaftmoor Lane, Birmingham. Kids, fighters and adults, Monday to Thursday. £5 a session or £10 for the week.',
   openGraph: {
     title: "Caesar's Boxing Gym",
     description:

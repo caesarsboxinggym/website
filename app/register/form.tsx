@@ -27,7 +27,7 @@ function bandLabel(dob: string) {
   if (age < 0 || age > 120) return null
   if (age < 6) return { text: `Age ${age} — under six, please have a word with a coach first`, warn: true }
   if (age < 13) return { text: `Age ${age} · Kids Boxing · £3 a session`, warn: false }
-  if (age <= 16) return { text: `Age ${age} · Teenagers · £5 a session`, warn: false }
+  if (age <= 16) return { text: `Age ${age} · £5 a session`, warn: false }
   return { text: `Age ${age} · Adult · £5 a session`, warn: false }
 }
 
