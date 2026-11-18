@@ -5,6 +5,7 @@ import { useStaff } from '@/lib/staff'
 import { useData } from '@/lib/use-data'
 import { PaneLoading } from '../pane-loading'
 import { ExportCsv } from './export-csv'
+import { PaymentsExport } from './payments-export'
 
 type Balance = {
   member_id: string
@@ -213,6 +214,8 @@ function AdminBalances() {
           />
         </>
       )}
+
+      <PaymentsExport />
     </section>
   )
 }
