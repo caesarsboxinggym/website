@@ -1807,3 +1807,59 @@ tfoot td{
 }
 .match-search:focus{ outline:2px solid var(--bronze); border-color:var(--bronze); }
 .opt-chosen{ border-color:var(--bronze); background:#FBF3E4; box-shadow:inset 0 0 0 1px var(--bronze); }
+
+/* ============================================================
+   MEMBERS — the list, and the add / edit sheet
+   ============================================================ */
+
+.mem-bar{
+  display:flex;
+  align-items:flex-end;
+  gap:10px;
+  margin-bottom:16px;
+}
+.mem-bar .field{ flex:1; min-width:0; }
+.mem-bar .btn-record{ flex:none; width:auto; min-height:46px; padding-inline:18px; }
+
+/* not a paid / unpaid state, so the edge is bronze rather than red or green */
+.row.mem-row{ border-left-color:var(--bronze); }
+
+.mem-det{
+  background:#fff;
+  border:1px solid #E3D8C6;
+  border-radius:var(--r);
+}
+.mem-det .det:last-child{ border-bottom:0; }
+
+.mem-link{
+  color:var(--bronze-deep);
+  font-weight:600;
+  text-decoration:none;
+  border-bottom:1px solid #D8CCB8;
+}
+.mem-link:hover{ border-color:var(--bronze); }
+
+/* light versions of the fields the dark registration form already has */
+.field-light textarea,
+.field-light select{
+  font:inherit;
+  font-size:1rem;
+  padding:11px 13px;
+  background:#fff;
+  border:1px solid #D8CCB8;
+  border-radius:var(--r);
+  color:#241B14;
+}
+.field-light select{ min-height:46px; }
+.field-light textarea::placeholder{ color:#A2907C; }
+.field-light textarea:focus,
+.field-light select:focus{ outline:2px solid var(--bronze); outline-offset:0; border-color:var(--bronze); }
+
+.check-light{ color:#5E4F3F; }
+.check-light:hover{ color:#241B14; }
+
+/* sheets: keep the close button on the right edge, and stop paired inputs
+   pushing past the edge of the sheet on narrow phones */
+.sheet-head > div{ flex:1; min-width:0; }
+.pair > *{ min-width:0; }
+.pair .field input{ width:100%; min-width:0; }
