@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { requestPlace } from './actions'
+import { fitsSession, isKidOn, todayIso, validDob } from '@/lib/age'
 
 export type Slot = {
   id: string
@@ -43,6 +44,9 @@ function fullness(left: number, capacity: number) {
 export function Booker({ slots }: { slots: Slot[] }) {
   const [picked, setPicked] = useState<Slot | null>(null)
   const [done, setDone] = useState<Slot | null>(null)
+  // Asked first, because it decides which classes they can ask for.
+  const [dob, setDob] = useState('')
+  const dobOk = validDob(dob)
 
   if (done) {
     return (
@@ -72,18 +76,10 @@ export function Booker({ slots }: { slots: Slot[] }) {
   }
 
   if (picked) {
-    return <RequestForm slot={picked} onBack={() => setPicked(null)} onDone={() => { setDone(picked); setPicked(null) }} />
+    return <RequestForm slot={picked} dob={dob} onBack={() => setPicked(null)} onDone={() => { setDone(picked); setPicked(null) }} />
   }
 
-  // group by day
-  const days: { date: string; slots: Slot[] }[] = []
-  for (const s of slots) {
-    const last = days[days.length - 1]
-    if (last && last.date === s.session_date) last.slots.push(s)
-    else days.push({ date: s.session_date, slots: [s] })
-  }
-
-  if (days.length === 0) {
+  if (slots.length === 0) {
     return (
       <div className="note">
         <b>No sessions listed yet.</b> Give the gym a ring on 07568 402875 and a coach will sort you
@@ -92,8 +88,50 @@ export function Booker({ slots }: { slots: Slot[] }) {
     )
   }
 
+  // Kids (12 and under) see kids classes only; everyone else sees the rest.
+  const open = dobOk ? slots.filter((s) => fitsSession(dob, s.session_date, s.max_age)) : []
+  const kid = dobOk && isKidOn(dob, todayIso())
+
+  // group by day
+  const days: { date: string; slots: Slot[] }[] = []
+  for (const s of open) {
+    const last = days[days.length - 1]
+    if (last && last.date === s.session_date) last.slots.push(s)
+    else days.push({ date: s.session_date, slots: [s] })
+  }
+
   return (
     <div className="book-days">
+      <div className="book-who">
+        <div className="field">
+          <label htmlFor="bdob">Date of birth of the person training</label>
+          <input
+            id="bdob"
+            type="date"
+            value={dob}
+            onChange={(e) => setDob(e.target.value)}
+            max={todayIso()}
+            autoComplete="bday"
+          />
+        </div>
+        <p className="field-hint">
+          {!dob
+            ? 'Start here. Kids (12 and under) and adults train in separate classes, so this decides which sessions you can ask for.'
+            : !dobOk
+              ? 'That does not look like a real date of birth.'
+              : kid
+                ? 'Showing kids classes, for ages 12 and under.'
+                : 'Showing classes for ages 13 and over. Kids classes are for 12 and under.'}
+        </p>
+      </div>
+
+      {dobOk && days.length === 0 && (
+        <div className="note">
+          <b>No {kid ? 'kids' : 'adult'} sessions in the next two weeks.</b> Give the gym a ring on
+          07568 402875 and a coach will sort you out.
+        </div>
+      )}
+
       {days.map((d) => (
         <div key={d.date}>
           <p className="day-rule day-rule-dark">{dayHeading(d.date)}</p>
@@ -129,10 +167,12 @@ export function Booker({ slots }: { slots: Slot[] }) {
 
 function RequestForm({
   slot,
+  dob,
   onBack,
   onDone,
 }: {
   slot: Slot
+  dob: string
   onBack: () => void
   onDone: () => void
 }) {
@@ -141,7 +181,6 @@ function RequestForm({
     last_name: '',
     phone: '',
     email: '',
-    date_of_birth: '',
     note: '',
   })
   const [error, setError] = useState<string | null>(null)
@@ -159,7 +198,7 @@ function RequestForm({
         e.preventDefault()
         setError(null)
         start(async () => {
-          const res = await requestPlace({ session_id: slot.id, ...f })
+          const res = await requestPlace({ session_id: slot.id, date_of_birth: dob, ...f })
           if (!res.ok) return setError(res.error)
           onDone()
         })
@@ -180,7 +219,7 @@ function RequestForm({
       </div>
 
       <fieldset className="reg-set">
-        <legend className="eyebrow">Your details</legend>
+        <legend className="eyebrow">Details of the person training</legend>
 
         <div className="pair">
           <div className="field">
@@ -204,21 +243,6 @@ function RequestForm({
         <div className="field">
           <label htmlFor="bem">Email &mdash; optional</label>
           <input id="bem" type="email" value={f.email} onChange={set('email')} autoComplete="email" />
-        </div>
-
-        <div className="field">
-          <label htmlFor="bdob">Date of birth &mdash; new members only</label>
-          <input
-            id="bdob"
-            type="date"
-            value={f.date_of_birth}
-            onChange={set('date_of_birth')}
-            max={new Date().toISOString().slice(0, 10)}
-          />
-          <p className="field-hint">
-            Skip it if you already train here. If you&rsquo;re new it tells the coach which class
-            and rate applies.
-          </p>
         </div>
 
         <div className="field">

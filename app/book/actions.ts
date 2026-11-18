@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { refresh } from '@/lib/use-data'
+import { validDob } from '@/lib/age'
 
 export type BookingInput = {
   session_id: string
@@ -7,7 +8,7 @@ export type BookingInput = {
   last_name?: string
   phone: string
   email?: string
-  date_of_birth?: string
+  date_of_birth: string
   note?: string
 }
 
@@ -24,6 +25,9 @@ export async function requestPlace(input: BookingInput): Promise<BookResult> {
     return { ok: false, error: 'Please give a phone number so a coach can confirm.' }
   }
   if (!input.session_id) return { ok: false, error: 'Please pick a session.' }
+  if (!validDob(input.date_of_birth)) {
+    return { ok: false, error: 'Please give the date of birth of the person training.' }
+  }
 
   const supabase = createClient()
 
@@ -33,12 +37,12 @@ export async function requestPlace(input: BookingInput): Promise<BookResult> {
     last_name: trim(input.last_name),
     phone: input.phone.trim(),
     email: trim(input.email),
-    date_of_birth: input.date_of_birth || null,
+    date_of_birth: input.date_of_birth,
     note: trim(input.note),
   })
 
   if (error) {
-    // The unique index and the capacity check in the policy both surface here.
+    // The unique index, and the capacity and age checks in the policy, all surface here.
     if (error.code === '23505' || error.message.includes('booking_requests_no_dupes')) {
       return {
         ok: false,
@@ -48,7 +52,8 @@ export async function requestPlace(input: BookingInput): Promise<BookResult> {
     if (error.code === '42501') {
       return {
         ok: false,
-        error: 'That session just filled up. Pick another one, or ring the gym on 07568 402875.',
+        error:
+          'That session has just filled up, or is not open to that age group. Pick another one, or ring the gym on 07568 402875.',
       }
     }
     return {

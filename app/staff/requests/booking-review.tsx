@@ -2,6 +2,10 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { acceptBookingRequest, rejectBookingRequest } from './actions'
+import { ageOn } from '@/lib/age'
+
+/** Stands in for a member id when the person is not on the system yet. */
+const NEW = 'new'
 
 export type BookingRequest = {
   id: string
@@ -89,8 +93,13 @@ function BookingCard({
     )
   }, [members, r])
 
+  // A new member needs a date of birth: it decides their rate and age group.
+  const canCreate = Boolean(r.date_of_birth)
+
+  // One clear match is picked for the coach. No match at all means they are
+  // almost certainly new, so that is picked instead.
   const [chosen, setChosen] = useState<string | null>(
-    suggested.length === 1 ? suggested[0].id : null
+    suggested.length === 1 ? suggested[0].id : suggested.length === 0 && canCreate ? NEW : null
   )
   const [query, setQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -137,7 +146,15 @@ function BookingCard({
         {r.date_of_birth && (
           <div className="det">
             <span className="det-k">Date of birth</span>
-            <span className="det-v">{r.date_of_birth} — says they are new</span>
+            <span className="det-v">
+              {new Date(r.date_of_birth + 'T00:00:00').toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}{' '}
+              &middot; age {ageOn(r.date_of_birth, r.session_date)} on the night &middot;{' '}
+              {ageOn(r.date_of_birth, r.session_date) < 13 ? 'kid' : '13 or over'}
+            </span>
           </div>
         )}
         {r.note && (
@@ -172,9 +189,11 @@ function BookingCard({
         <div className="pick-list">
           {matches.length === 0 && (
             <p className="field-hint">
-              {members.length === 0
-                ? 'No members on the system yet.'
-                : 'Nobody matches. They may need registering first — send them the /register link, or add them from the Tonight tab.'}
+              {q
+                ? 'Nobody matches that search.'
+                : canCreate
+                  ? 'Nobody on the system matches this name or phone number.'
+                  : 'Nobody matches, and this request has no date of birth, so they cannot be added from here. Add them on the Members tab first.'}
             </p>
           )}
           {matches.slice(0, 6).map((m) => (
@@ -196,6 +215,19 @@ function BookingCard({
               <span className="opt-fig">{chosen === m.id ? 'Selected' : 'Pick'}</span>
             </button>
           ))}
+          {canCreate && (
+            <button
+              type="button"
+              className={chosen === NEW ? 'opt opt-chosen' : 'opt'}
+              onClick={() => setChosen(NEW)}
+            >
+              <span className="opt-body">
+                <span className="opt-name">Not on the system yet</span>
+                <span className="opt-note">Add {name} as a new member from these details</span>
+              </span>
+              <span className="opt-fig">{chosen === NEW ? 'Selected' : 'Pick'}</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -232,13 +264,23 @@ function BookingCard({
               onClick={() => {
                 setError(null)
                 start(async () => {
-                  const res = await acceptBookingRequest(r.id, chosen!)
+                  const res = await acceptBookingRequest(r.id, chosen === NEW ? null : chosen!)
                   if (!res.ok) return setError(res.error)
-                  onDone(`${name} booked into ${hhmm(r.starts)} ${r.class_name}.`)
+                  onDone(
+                    chosen === NEW
+                      ? `${name} added as a member and booked into ${hhmm(r.starts)} ${r.class_name}.`
+                      : `${name} booked into ${hhmm(r.starts)} ${r.class_name}.`
+                  )
                 })
               }}
             >
-              {pending ? 'Booking…' : chosen ? 'Approve & book in' : 'Pick a member first'}
+              {pending
+                ? 'Booking…'
+                : chosen === NEW
+                  ? 'Add member & book in'
+                  : chosen
+                    ? 'Approve & book in'
+                    : 'Pick a member first'}
             </button>
           </>
         )}

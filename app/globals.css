@@ -1863,3 +1863,12 @@ tfoot td{
 .sheet-head > div{ flex:1; min-width:0; }
 .pair > *{ min-width:0; }
 .pair .field input{ width:100%; min-width:0; }
+
+/* booking: date of birth is asked before any sessions are shown */
+.book-who{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-width:420px;
+  margin-bottom:14px;
+}
