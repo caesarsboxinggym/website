@@ -15,6 +15,8 @@ export type Slot = {
   max_age: number | null
   capacity: number
   places_left: number
+  /** By invitation: shown so people know it runs, but cannot be asked for. */
+  invite_only?: boolean
 }
 
 const hhmm = (t: string) => t.slice(0, 5)
@@ -137,14 +139,16 @@ export function Booker({ slots }: { slots: Slot[] }) {
           <p className="day-rule day-rule-dark">{dayHeading(d.date)}</p>
           <div className="book-list">
             {d.slots.map((s) => {
-              const f = fullness(s.places_left, s.capacity)
+              const f = s.invite_only
+                ? { text: 'Invite only', tone: 'invite' as const }
+                : fullness(s.places_left, s.capacity)
               const ages = ageNote(s.min_age, s.max_age)
               return (
                 <button
                   key={s.id}
                   type="button"
                   className="book-slot"
-                  disabled={s.places_left === 0}
+                  disabled={s.places_left === 0 || s.invite_only}
                   onClick={() => setPicked(s)}
                 >
                   <span className="book-time">{hhmm(s.starts)}</span>
@@ -152,6 +156,7 @@ export function Booker({ slots }: { slots: Slot[] }) {
                     <span className="book-name">{s.class_name}</span>
                     <span className="book-meta">
                       {ages ? `${ages} · ` : ''}until {hhmm(s.ends)}
+                      {s.invite_only ? ' · a coach will invite you' : ''}
                     </span>
                   </span>
                   <span className={`book-left book-left-${f.tone}`}>{f.text}</span>

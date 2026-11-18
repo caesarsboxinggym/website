@@ -1761,6 +1761,7 @@ tfoot td{
 .book-left-mid{ color:var(--bronze-lit); border-color:var(--bronze-deep); background:#231A0F; }
 .book-left-low{ color:#E8A48F; border-color:#6B3125; background:#2A1712; }
 .book-left-full{ color:var(--muted-dim); border-color:var(--hairline); background:transparent; }
+.book-left-invite{ color:var(--bronze); border-color:var(--bronze-deep); border-style:dashed; background:transparent; }
 
 .book-picked{
   display:flex;

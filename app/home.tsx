@@ -15,7 +15,12 @@ function hhmm(t: string) {
   return t.slice(0, 5)
 }
 
-type ClassRef = { name: string; min_age: number | null; max_age: number | null }
+type ClassRef = {
+  name: string
+  min_age: number | null
+  max_age: number | null
+  invite_only?: boolean
+}
 
 type Slot = {
   weekday: number
@@ -47,7 +52,7 @@ async function load() {
   const [{ data: slots }, { data: classes }, { data: reviews }] = await Promise.all([
     supabase
       .from('schedule_slots')
-      .select('weekday, starts, ends, class_types (name, min_age, max_age)')
+      .select('weekday, starts, ends, class_types (*)')
       .eq('active', true)
       .order('weekday')
       .order('starts'),
@@ -171,6 +176,7 @@ export function Home() {
                           <span className="slot-meta">
                             {ages ? `${ages} · ` : ''}
                             until {hhmm(s.ends)}
+                            {ct?.invite_only ? ' · invite only' : ''}
                           </span>
                         </span>
                       </div>

@@ -14,7 +14,8 @@ async function load() {
 
   const { data, error } = await createClient()
     .from('session_availability')
-    .select('id, session_date, starts, ends, class_name, min_age, max_age, capacity, places_left')
+    // every column, so the page keeps working whether or not invite_only exists yet
+    .select('*')
     .gte('session_date', iso(from))
     .lte('session_date', iso(to))
     .order('session_date')
