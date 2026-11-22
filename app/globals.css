@@ -299,7 +299,9 @@ button{ font:inherit; color:inherit; cursor:pointer; }
 
 .coin img{ width:100%; height:100%; }
 
-/* one specular pass, as if catching light on metal */
+/* On arrival: two slow passes of light and a flurry of glints, about six
+   seconds in all. After that it settles to one pass and a few glints every
+   few seconds, as if the medal were turned in the hand. */
 .coin::after{
   content:"";
   position:absolute;
@@ -328,13 +330,21 @@ button{ font:inherit; color:inherit; cursor:pointer; }
   clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%);
   opacity:0;
   transform:scale(0);
-  animation:glint 5.5s ease-in-out infinite both;
+  /* --d: when it joins the opening flurry. --l: its turn in the loop after. */
+  animation:
+    glint-burst 1.15s ease-in-out var(--d) 4 both,
+    glint 5.5s ease-in-out calc(6.6s + var(--l)) infinite;
 }
-.coin-glints i:nth-child(1){ top:13%; left:24%; animation-delay:1.3s; }
-.coin-glints i:nth-child(2){ top:20%; left:72%; width:12%; animation-delay:1.75s; }
-.coin-glints i:nth-child(3){ top:66%; left:80%; width:7%;  animation-delay:2.2s; }
-.coin-glints i:nth-child(4){ top:78%; left:30%; width:10%; animation-delay:3.6s; }
-.coin-glints i:nth-child(5){ top:44%; left:8%;  width:7%;  animation-delay:4.3s; }
+.coin-glints i:nth-child(1){ top:13%; left:24%; --d:.8s;   --l:.7s; }
+.coin-glints i:nth-child(2){ top:20%; left:72%; width:12%; --d:1.15s; --l:1.15s; }
+.coin-glints i:nth-child(3){ top:66%; left:80%; width:7%;  --d:1.5s;  --l:1.6s; }
+.coin-glints i:nth-child(4){ top:78%; left:30%; width:10%; --d:.95s;  --l:3s; }
+.coin-glints i:nth-child(5){ top:44%; left:8%;  width:7%;  --d:1.35s; --l:3.7s; }
+
+@keyframes glint-burst{
+  0%,100%{ opacity:0; transform:scale(0) rotate(0deg); }
+  50%{ opacity:1; transform:scale(1) rotate(45deg); }
+}
 
 @keyframes glint{
   0%,22%,100%{ opacity:0; transform:scale(0) rotate(0deg); }
