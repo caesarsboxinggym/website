@@ -299,19 +299,27 @@ button{ font:inherit; color:inherit; cursor:pointer; }
 
 .coin img{ width:100%; height:100%; }
 
-/* On arrival: two slow passes of light and a flurry of glints, about six
-   seconds in all. After that it settles to one pass and a few glints every
-   few seconds, as if the medal were turned in the hand. */
+/* On arrival: two slow passes of light and a flurry of glints, about eight
+   seconds in all. After that it settles to one unhurried pass and a few
+   glints every seven seconds, as if the medal were turned in the hand. */
 .coin::after{
   content:"";
   position:absolute;
-  inset:-30%;
+  inset:0;
+  /* The band of light is a wide background slid across, so the mask below
+     stays put and the light never shows past the edge of the medal (the
+     artwork stops a little short of the circle). */
   background:linear-gradient(72deg,
-    rgba(255,255,255,0) 38%,
-    rgba(255,236,201,.42) 49%,
-    rgba(255,255,255,0) 60%);
-  transform:translateX(-115%);
-  animation:sweep-loop 5.5s cubic-bezier(.3,.5,.2,1) 620ms infinite both;
+    rgba(255,255,255,0) 43%,
+    rgba(255,236,201,.42) 50%,
+    rgba(255,255,255,0) 57%) no-repeat;
+  background-size:300% 100%;
+  background-position:100% 0;
+  -webkit-mask-image:radial-gradient(circle closest-side,#000 91.5%,transparent 93%);
+  mask-image:radial-gradient(circle closest-side,#000 91.5%,transparent 93%);
+  animation:
+    sweep 3.8s cubic-bezier(.45,.2,.55,.8) 620ms 2 both,
+    sweep-loop 7s cubic-bezier(.45,.2,.55,.8) 8.6s infinite;
   pointer-events:none;
 }
 
@@ -332,14 +340,14 @@ button{ font:inherit; color:inherit; cursor:pointer; }
   transform:scale(0);
   /* --d: when it joins the opening flurry. --l: its turn in the loop after. */
   animation:
-    glint-burst 1.15s ease-in-out var(--d) 4 both,
-    glint 5.5s ease-in-out calc(6.6s + var(--l)) infinite;
+    glint-burst 1.15s ease-in-out var(--d) 6 both,
+    glint 7s ease-in-out calc(8.6s + var(--l)) infinite;
 }
-.coin-glints i:nth-child(1){ top:13%; left:24%; --d:.8s;   --l:.7s; }
-.coin-glints i:nth-child(2){ top:20%; left:72%; width:12%; --d:1.15s; --l:1.15s; }
-.coin-glints i:nth-child(3){ top:66%; left:80%; width:7%;  --d:1.5s;  --l:1.6s; }
-.coin-glints i:nth-child(4){ top:78%; left:30%; width:10%; --d:.95s;  --l:3s; }
-.coin-glints i:nth-child(5){ top:44%; left:8%;  width:7%;  --d:1.35s; --l:3.7s; }
+.coin-glints i:nth-child(1){ top:13%; left:24%; --d:.8s;   --l:1.2s; }
+.coin-glints i:nth-child(2){ top:20%; left:72%; width:12%; --d:1.15s; --l:1.9s; }
+.coin-glints i:nth-child(3){ top:66%; left:80%; width:7%;  --d:1.5s;  --l:2.6s; }
+.coin-glints i:nth-child(4){ top:78%; left:30%; width:10%; --d:.95s;  --l:4.4s; }
+.coin-glints i:nth-child(5){ top:44%; left:8%;  width:7%;  --d:1.35s; --l:5.4s; }
 
 @keyframes glint-burst{
   0%,100%{ opacity:0; transform:scale(0) rotate(0deg); }
@@ -347,12 +355,12 @@ button{ font:inherit; color:inherit; cursor:pointer; }
 }
 
 @keyframes glint{
-  0%,22%,100%{ opacity:0; transform:scale(0) rotate(0deg); }
-  10%{ opacity:1; transform:scale(1) rotate(45deg); }
+  0%,18%,100%{ opacity:0; transform:scale(0) rotate(0deg); }
+  9%{ opacity:1; transform:scale(1) rotate(45deg); }
 }
 @keyframes sweep-loop{
-  0%{ transform:translateX(-115%); }
-  27%,100%{ transform:translateX(115%); }
+  0%{ background-position:100% 0; }
+  50%,100%{ background-position:0 0; }
 }
 
 @keyframes strike{
@@ -360,8 +368,8 @@ button{ font:inherit; color:inherit; cursor:pointer; }
   to{ opacity:1; transform:scale(1); }
 }
 @keyframes sweep{
-  from{ transform:translateX(-115%); }
-  to{ transform:translateX(115%); }
+  from{ background-position:100% 0; }
+  to{ background-position:0 0; }
 }
 
 .hero-title{
