@@ -101,6 +101,14 @@ export function Home() {
             <div className="coin">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={LOGO} alt="Caesar's Boxing Gym medallion" width={560} height={560} />
+              {/* glints that catch on the metal, one after another */}
+              <span className="coin-glints" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+              </span>
             </div>
             <div className="hero-copy">
               <h1 className="hero-title">

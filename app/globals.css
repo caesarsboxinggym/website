@@ -309,8 +309,40 @@ button{ font:inherit; color:inherit; cursor:pointer; }
     rgba(255,236,201,.42) 49%,
     rgba(255,255,255,0) 60%);
   transform:translateX(-115%);
-  animation:sweep 1500ms cubic-bezier(.3,.5,.2,1) 620ms both;
+  animation:sweep-loop 5.5s cubic-bezier(.3,.5,.2,1) 620ms infinite both;
   pointer-events:none;
+}
+
+/* the dazzle: small four-point glints that flare and fade around the medal */
+.coin-glints{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  filter:drop-shadow(0 0 6px rgba(255,226,170,.9));
+}
+.coin-glints i{
+  position:absolute;
+  width:9%;
+  aspect-ratio:1;
+  background:radial-gradient(circle,#fff 0 22%,#FFE9BF 60%);
+  clip-path:polygon(50% 0,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0 50%,42% 42%);
+  opacity:0;
+  transform:scale(0);
+  animation:glint 5.5s ease-in-out infinite both;
+}
+.coin-glints i:nth-child(1){ top:13%; left:24%; animation-delay:1.3s; }
+.coin-glints i:nth-child(2){ top:20%; left:72%; width:12%; animation-delay:1.75s; }
+.coin-glints i:nth-child(3){ top:66%; left:80%; width:7%;  animation-delay:2.2s; }
+.coin-glints i:nth-child(4){ top:78%; left:30%; width:10%; animation-delay:3.6s; }
+.coin-glints i:nth-child(5){ top:44%; left:8%;  width:7%;  animation-delay:4.3s; }
+
+@keyframes glint{
+  0%,22%,100%{ opacity:0; transform:scale(0) rotate(0deg); }
+  10%{ opacity:1; transform:scale(1) rotate(45deg); }
+}
+@keyframes sweep-loop{
+  0%{ transform:translateX(-115%); }
+  27%,100%{ transform:translateX(115%); }
 }
 
 @keyframes strike{
